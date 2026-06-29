@@ -7,307 +7,243 @@
 <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Inter', sans-serif;
-    background: #f4f6fb;
-    color: #1a1d2e;
-    min-height: 100vh;
-    padding: 2rem 1rem;
-  }
-  #root { max-width: 700px; margin: 0 auto; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#f0f2f9;color:#1a1d2e;min-height:100vh;padding:2rem 1rem}
+#root{max-width:780px;margin:0 auto}
 
-  input, textarea {
-    background: #fff;
-    border: 1px solid #dde1ec;
-    border-radius: 8px;
-    padding: 9px 12px;
-    font-size: 13px;
-    font-family: 'Inter', sans-serif;
-    color: #1a1d2e;
-    outline: none;
-    transition: border 0.15s;
-    width: 100%;
-  }
-  input:focus, textarea:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
-  input:disabled, textarea:disabled { background: #f8f9fc; color: #9198b0; cursor: not-allowed; }
-  input[type="email"] {}
+input,textarea,select{background:#fff;border:1px solid #dde1ec;border-radius:8px;padding:9px 12px;font-size:13px;font-family:'Inter',sans-serif;color:#1a1d2e;outline:none;transition:border .15s,box-shadow .15s;width:100%}
+input:focus,textarea:focus,select:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.12)}
+input:disabled,textarea:disabled{background:#f5f6fa;color:#9198b0;cursor:not-allowed}
 
-  button { font-family: 'Inter', sans-serif; transition: opacity 0.15s, transform 0.1s; }
-  button:active:not(:disabled) { transform: scale(0.98); }
+button{font-family:'Inter',sans-serif;transition:opacity .15s,transform .1s,background .15s}
+button:active:not(:disabled){transform:scale(.98)}
 
-  .card {
-    background: #fff;
-    border: 1px solid #e4e7f0;
-    border-radius: 14px;
-    padding: 1.25rem 1.5rem;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-  }
-  .card-info {
-    background: #eef0fd;
-    border: 1px solid #c7caff;
-    border-radius: 14px;
-    padding: 1rem 1.25rem;
-    font-size: 13px;
-    color: #4347b5;
-    line-height: 1.7;
-  }
-  .card-info a { color: #4347b5; font-weight: 500; }
-  .card-success {
-    background: #ecfdf5;
-    border: 1px solid #86efac;
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-size: 13px;
-    color: #166534;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .card-warning {
-    background: #fffbeb;
-    border: 1px solid #fcd34d;
-    border-radius: 12px;
-    padding: 12px 16px;
-    font-size: 13px;
-    color: #92400e;
-  }
-  .card-danger {
-    background: #fef2f2;
-    border: 1px solid #fca5a5;
-    border-radius: 12px;
-    padding: 12px 16px;
-    font-size: 13px;
-    color: #991b1b;
-  }
+.btn-primary{background:#6366f1;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn-primary:disabled{background:#e4e7f0;color:#9198b0;cursor:not-allowed;transform:none}
+.btn-primary:not(:disabled):hover{background:#5254cc}
+.btn-secondary{background:#fff;color:#4a5070;border:1px solid #dde1ec;border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn-secondary:hover{background:#f5f6fa}
+.btn-danger{background:#fff;color:#dc2626;border:1px solid #fca5a5;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.btn-send{background:#6366f1;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn-send:hover{background:#5254cc}
+.btn-ghost{background:transparent;border:1px solid #e4e7f0;color:#6b7494;border-radius:7px;padding:6px 11px;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.btn-ghost:hover{background:#f5f6fa}
+.btn-icon{background:transparent;border:none;cursor:pointer;color:#9198b0;padding:5px;border-radius:6px;display:inline-flex;align-items:center}
+.btn-icon:hover{background:#f0f2f9;color:#4a5070}
 
-  .btn-primary {
-    background: #6366f1;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 20px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .btn-primary:disabled { background: #e4e7f0; color: #9198b0; cursor: not-allowed; }
-  .btn-secondary {
-    background: transparent;
-    color: #5a6080;
-    border: 1px solid #dde1ec;
-    border-radius: 8px;
-    padding: 8px 16px;
-    font-size: 13px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .btn-send {
-    background: #6366f1;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 9px 18px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .btn-ghost {
-    background: transparent;
-    border: 1px solid #dde1ec;
-    color: #5a6080;
-    border-radius: 8px;
-    padding: 7px 12px;
-    font-size: 12px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-  }
+.card{background:#fff;border:1px solid #e4e7f0;border-radius:14px;padding:1.25rem 1.5rem;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card-accent{background:#eef0fd;border:1px solid #c7caff;border-radius:14px;padding:1rem 1.25rem;font-size:13px;color:#4347b5;line-height:1.7}
+.card-accent a{color:#4347b5;font-weight:500}
+.card-success{background:#ecfdf5;border:1px solid #86efac;border-radius:10px;padding:10px 14px;font-size:13px;color:#166534;display:flex;align-items:center;gap:8px}
+.card-warning{background:#fffbeb;border:1px solid #fcd34d;border-radius:12px;padding:12px 16px;font-size:13px;color:#92400e;line-height:1.6}
+.card-danger{background:#fef2f2;border:1px solid #fca5a5;border-radius:12px;padding:12px 16px;font-size:13px;color:#991b1b;line-height:1.6}
 
-  label { font-size: 13px; color: #4a5070; display: block; margin-bottom: 5px; }
-  .label-muted { font-size: 12px; color: #9198b0; }
+label{font-size:13px;color:#4a5070;display:block;margin-bottom:5px;font-weight:500}
+.muted{color:#9198b0}
+.small{font-size:12px}
 
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .flex-col { display: flex; flex-direction: column; gap: 14px; }
-  .flex-row { display: flex; align-items: center; }
-  .flex-between { display: flex; align-items: center; justify-content: space-between; }
-  .gap-6 { gap: 6px; }
-  .gap-8 { gap: 8px; }
-  .gap-10 { gap: 10px; }
-  .gap-12 { gap: 12px; }
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.flex-col{display:flex;flex-direction:column;gap:14px}
+.flex-row{display:flex;align-items:center}
+.flex-between{display:flex;align-items:center;justify-content:space-between}
+.gap-4{gap:4px}.gap-6{gap:6px}.gap-8{gap:8px}.gap-10{gap:10px}.gap-12{gap:12px}
+.mt-4{margin-top:4px}.mt-8{margin-top:8px}.mt-12{margin-top:12px}.mb-4{margin-bottom:4px}.mb-8{margin-bottom:8px}.mb-12{margin-bottom:12px}
 
-  @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-  .spin { animation: spin 1s linear infinite; }
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.spin{animation:spin 1s linear infinite;display:inline-block}
+.fade-in{animation:fadeIn .25s ease}
 
-  .tone-btn {
-    padding: 10px 8px;
-    border-radius: 8px;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.15s;
-  }
-  .tone-btn.active {
-    border: 2px solid #6366f1;
-    background: #eef0fd;
-  }
-  .tone-btn.inactive {
-    border: 1px solid #dde1ec;
-    background: transparent;
-  }
+.avatar{width:36px;height:36px;border-radius:50%;background:#eef0fd;color:#6366f1;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+.avatar-sm{width:30px;height:30px;font-size:11px}
 
-  .email-card {
-    background: #fff;
-    border: 1px solid #e4e7f0;
-    border-radius: 14px;
-    padding: 1rem 1.25rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-  }
-  .email-card.sent { border-color: #86efac; }
-  .email-card.error { border-color: #fca5a5; }
+.tab-bar{display:flex;gap:4px;background:#fff;border:1px solid #e4e7f0;border-radius:12px;padding:4px;margin-bottom:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.tab{flex:1;padding:8px;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;background:transparent;color:#9198b0;display:flex;align-items:center;justify-content:center;gap:6px}
+.tab.active{background:#6366f1;color:#fff;box-shadow:0 1px 4px rgba(99,102,241,.3)}
+.tab:not(.active):hover{background:#f0f2f9;color:#4a5070}
+.tab-badge{background:rgba(255,255,255,.25);color:inherit;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:600}
+.tab.active .tab-badge{background:rgba(255,255,255,.3)}
+.tab:not(.active) .tab-badge{background:#6366f1;color:#fff}
 
-  .avatar {
-    width: 36px; height: 36px; border-radius: 50%;
-    background: #eef0fd; color: #6366f1;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 600; flex-shrink: 0;
-  }
+.tone-btn{padding:10px 8px;border-radius:8px;cursor:pointer;text-align:center;transition:all .15s;border:1px solid #dde1ec;background:transparent;width:100%}
+.tone-btn.active{border:2px solid #6366f1;background:#eef0fd}
 
-  .status-bar {
-    border-radius: 12px;
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .status-bar.idle { background: #f8f9fc; border: 1px solid #e4e7f0; }
-  .status-bar.writing { background: #fffbeb; border: 1px solid #fcd34d; }
-  .status-bar.done { background: #ecfdf5; border: 1px solid #86efac; }
+.email-card{background:#fff;border:1px solid #e4e7f0;border-radius:14px;padding:1rem 1.25rem;box-shadow:0 1px 3px rgba(0,0,0,.03)}
+.email-card.sent{border-color:#86efac;background:#fafffe}
+.email-card.replied{border-color:#6366f1;background:#fafafe}
+.email-card.error{border-color:#fca5a5}
 
-  .step-row {
-    display: flex;
-    align-items: center;
-    background: #fff;
-    border: 1px solid #e4e7f0;
-    border-radius: 12px;
-    padding: 12px 16px;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-  }
-  .step-dot {
-    width: 28px; height: 28px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 500; flex-shrink: 0;
-    transition: all 0.2s;
-  }
-  .step-line { flex: 1; height: 1px; margin: 0 10px; }
+.reply-banner{background:#eef0fd;border-radius:8px;padding:10px 12px;font-size:12px;color:#4347b5;margin-top:10px;border-left:3px solid #6366f1;line-height:1.5}
+.status-pill{font-size:11px;font-weight:500;padding:3px 8px;border-radius:10px;display:inline-flex;align-items:center;gap:4px}
+.pill-pending{background:#fff7ed;color:#c2410c}
+.pill-sent{background:#ecfdf5;color:#166534}
+.pill-replied{background:#eef0fd;color:#4347b5}
+.pill-error{background:#fef2f2;color:#991b1b}
 
-  .empty-state {
-    text-align: center;
-    padding: 2rem;
-    border: 1px dashed #dde1ec;
-    border-radius: 12px;
-    color: #9198b0;
-    font-size: 14px;
-  }
+.stat-card{background:#fff;border:1px solid #e4e7f0;border-radius:12px;padding:1rem;text-align:center}
 
-  ol.setup-list { padding-left: 18px; }
-  ol.setup-list li { margin-bottom: 4px; }
-  code.inline {
-    background: rgba(99,102,241,0.12);
-    padding: 1px 6px;
-    border-radius: 4px;
-    font-family: monospace;
-    font-size: 12px;
-  }
+.contact-row{background:#fff;border:1px solid #e4e7f0;border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px}
+
+.notif-dot{width:8px;height:8px;border-radius:50%;background:#6366f1;flex-shrink:0}
+
+code.inline{background:rgba(99,102,241,.12);padding:1px 6px;border-radius:4px;font-family:monospace;font-size:12px}
+ol.setup{padding-left:18px}
+ol.setup li{margin-bottom:5px}
+
+.csv-zone{border:2px dashed #dde1ec;border-radius:12px;padding:1.5rem;text-align:center;cursor:pointer;transition:all .15s;background:#fafbff}
+.csv-zone:hover,.csv-zone.over{border-color:#6366f1;background:#f0f0ff}
+
+.header-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem}
+.brand{font-size:20px;font-weight:600;color:#1a1d2e;display:flex;align-items:center;gap:8px}
+.user-chip{display:flex;align-items:center;gap:7px;background:#fff;border:1px solid #e4e7f0;border-radius:20px;padding:5px 12px 5px 5px;font-size:12px;color:#4a5070}
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useEffect, useRef } = React;
+const { useState, useEffect, useRef, useCallback } = React;
 
 const TONES = ["Professional","Friendly","Consultative","Bold"];
-const TONE_DESC = { Professional:"Polished, formal", Friendly:"Warm, conversational", Consultative:"Value-focused", Bold:"Direct, persuasive" };
+const TONE_DESC = {Professional:"Polished, formal",Friendly:"Warm, conversational",Consultative:"Value-focused",Bold:"Direct, persuasive"};
+const POLL_INTERVAL = 5 * 60 * 1000; // 5 min
+
+// ── Helpers ────────────────────────────────────────────────────────────────
 
 function buildRaw(from, to, subject, body) {
   const msg = [`From: ${from}`,`To: ${to}`,`Subject: ${subject}`,`MIME-Version: 1.0`,`Content-Type: text/plain; charset=utf-8`,``,body].join("\r\n");
   const bytes = new TextEncoder().encode(msg);
-  let bin = ""; bytes.forEach(b => (bin += String.fromCharCode(b)));
+  let bin=""; bytes.forEach(b=>(bin+=String.fromCharCode(b)));
   return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
 }
 
 async function gmailSend(token, from, to, subject, body) {
-  const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+  const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send",{
     method:"POST",
-    headers:{ Authorization:`Bearer ${token}`, "Content-Type":"application/json" },
-    body: JSON.stringify({ raw: buildRaw(from, to, subject, body) }),
+    headers:{Authorization:`Bearer ${token}`,"Content-Type":"application/json"},
+    body:JSON.stringify({raw:buildRaw(from,to,subject,body)}),
   });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e?.error?.message || `HTTP ${res.status}`); }
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||`HTTP ${res.status}`);}
+  return res.json();
 }
 
-function Steps({ labels, current }) {
-  return (
-    <div className="step-row">
-      {labels.map((label, i) => (
-        <React.Fragment key={i}>
-          <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <div className="step-dot" style={{
-              background: current>i ? "#22c55e" : current===i ? "#6366f1" : "#f1f2f8",
-              color: current>=i ? "#fff" : "#9198b0",
-              border: current>=i ? "none" : "1px solid #dde1ec",
-            }}>
-              {current>i ? "✓" : i+1}
-            </div>
-            <span style={{fontSize:13, fontWeight:current===i?500:400, color:current>i?"#166534":current===i?"#1a1d2e":"#9198b0"}}>{label}</span>
-          </div>
-          {i < labels.length-1 && <div className="step-line" style={{background:current>i?"#86efac":"#e4e7f0"}}/>}
-        </React.Fragment>
-      ))}
-    </div>
-  );
+async function checkThread(token, threadId) {
+  const res = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/threads/${threadId}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date`,{
+    headers:{Authorization:`Bearer ${token}`}
+  });
+  if(!res.ok) return null;
+  return res.json();
 }
 
-function EmailCard({ item, index, status, onEdit }) {
-  const initials = item.contact.name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
-  const cardClass = `email-card${status==="sent"?" sent":status?.startsWith("error")?" error":""}`;
+async function getReplySnippet(token, threadId, myEmail) {
+  const thread = await checkThread(token, threadId);
+  if (!thread || !thread.messages || thread.messages.length < 2) return null;
+  const reply = thread.messages.find(m => {
+    const from = (m.payload?.headers?.find(h=>h.name==="From")?.value||"").toLowerCase();
+    return !from.includes(myEmail.split("@")[0].toLowerCase()) && !from.includes(myEmail.toLowerCase());
+  });
+  return reply ? { snippet: thread.messages[thread.messages.length-1].snippet, messageCount: thread.messages.length } : null;
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/);
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(",").map(h=>h.trim().toLowerCase().replace(/[^a-z]/g,""));
+  return lines.slice(1).map(line => {
+    const vals = line.split(",").map(v=>v.trim().replace(/^"|"$/g,""));
+    const obj = {};
+    headers.forEach((h,i)=>{ obj[h]=vals[i]||""; });
+    return {
+      id: Date.now()+Math.random(),
+      name: obj.name||obj.fullname||obj.firstname||"",
+      email: obj.email||obj.emailaddress||"",
+      company: obj.company||obj.organization||"",
+      jobTitle: obj.jobtitle||obj.title||obj.role||"",
+      linkedIn: obj.linkedin||obj.linkedinurl||"",
+      notes: obj.notes||obj.note||"",
+    };
+  }).filter(c=>c.name&&c.email);
+}
+
+function initials(name) { return name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase(); }
+
+function notify(title, body, onClick) {
+  if(Notification.permission==="granted") {
+    const n = new Notification(title, {body, icon:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%236366f1'/><text x='16' y='21' text-anchor='middle' fill='white' font-size='16'>✉</text></svg>"});
+    if(onClick) n.onclick = onClick;
+  }
+}
+
+// ── Small components ───────────────────────────────────────────────────────
+
+function StatusPill({status}) {
+  if(!status) return null;
+  if(status==="pending") return <span className="status-pill pill-pending"><span className="spin">⟳</span>Sending</span>;
+  if(status==="sent") return <span className="status-pill pill-sent">✓ Sent</span>;
+  if(status==="replied") return <span className="status-pill pill-replied">💬 Replied</span>;
+  if(status?.startsWith("error")) return <span className="status-pill pill-error">✗ Failed</span>;
+  return null;
+}
+
+function Spinner() { return <span className="spin" style={{color:"#9198b0",fontSize:16}}>⟳</span>; }
+
+// ── Email Review Card ──────────────────────────────────────────────────────
+
+function EmailCard({item, index, status, onEdit, onRegenerate, disabled}) {
+  const [regenerating, setRegenerating] = useState(false);
+  const [expanded, setExpanded] = useState(true);
+
+  const handleRegen = async () => {
+    setRegenerating(true);
+    await onRegenerate(index);
+    setRegenerating(false);
+  };
+
+  const cardClass = `email-card fade-in${status==="sent"||status==="replied"?" sent":""}${status==="replied"?" replied":""}${status?.startsWith("error")?" error":""}`;
+
   return (
     <div className={cardClass}>
-      <div className="flex-row flex-between" style={{marginBottom: item.loading?0:12}}>
+      <div className="flex-between">
         <div className="flex-row gap-10">
-          <div className="avatar">{initials}</div>
+          <div className="avatar avatar-sm">{initials(item.contact.name)}</div>
           <div>
-            <p style={{fontSize:14,fontWeight:500,color:"#1a1d2e"}}>{item.contact.name}</p>
-            <p style={{fontSize:12,color:"#9198b0"}}>{item.contact.email}{item.contact.company?` · ${item.contact.company}`:""}</p>
+            <p style={{fontSize:14,fontWeight:500}}>{item.contact.name}</p>
+            <p className="small muted">{item.contact.email}{item.contact.company?` · ${item.contact.company}`:""}{item.contact.jobTitle?` · ${item.contact.jobTitle}`:""}</p>
           </div>
         </div>
-        <div style={{fontSize:12,display:"flex",alignItems:"center",gap:4}}>
-          {item.loading && <><span className="spin" style={{color:"#9198b0"}}>⟳</span><span style={{color:"#9198b0"}}>Writing…</span></>}
-          {status==="sent" && <span style={{color:"#166534"}}>✓ Sent</span>}
-          {status==="pending" && <span style={{color:"#92400e"}}>Sending…</span>}
-          {status?.startsWith("error") && <span style={{color:"#991b1b"}}>✗ Failed</span>}
+        <div className="flex-row gap-8">
+          <StatusPill status={status}/>
+          {item.loading && <Spinner/>}
+          {!item.loading && !disabled && (
+            <button className="btn-ghost" onClick={handleRegen} disabled={regenerating} title="Regenerate this email">
+              {regenerating?<span className="spin">⟳</span>:"↺"} Redo
+            </button>
+          )}
+          {!item.loading && (
+            <button className="btn-icon" onClick={()=>setExpanded(e=>!e)} title={expanded?"Collapse":"Expand"}>
+              {expanded?"▲":"▼"}
+            </button>
+          )}
         </div>
       </div>
-      {!item.loading && (
-        <div style={{borderTop:"1px solid #e4e7f0",paddingTop:10,display:"flex",flexDirection:"column",gap:8}}>
+
+      {item.replySnippet && (
+        <div className="reply-banner mt-8">
+          💬 <strong>Replied:</strong> "{item.replySnippet.snippet}"
+        </div>
+      )}
+
+      {!item.loading && expanded && (
+        <div style={{borderTop:"1px solid #e4e7f0",paddingTop:10,marginTop:10,display:"flex",flexDirection:"column",gap:8}}>
           <div>
-            <label className="label-muted" style={{marginBottom:3}}>Subject</label>
-            <input value={item.subject} onChange={e=>onEdit(index,"subject",e.target.value)} disabled={!!status} />
+            <label className="muted small" style={{marginBottom:3}}>Subject</label>
+            <input value={item.subject} onChange={e=>onEdit(index,"subject",e.target.value)} disabled={disabled||regenerating}/>
           </div>
           <div>
-            <label className="label-muted" style={{marginBottom:3}}>Body</label>
-            <textarea value={item.body} onChange={e=>onEdit(index,"body",e.target.value)} disabled={!!status} rows={7} style={{resize:"vertical"}} />
+            <label className="muted small" style={{marginBottom:3}}>Body</label>
+            <textarea value={item.body} onChange={e=>onEdit(index,"body",e.target.value)} disabled={disabled||regenerating} rows={7} style={{resize:"vertical"}}/>
           </div>
         </div>
       )}
@@ -315,71 +251,117 @@ function EmailCard({ item, index, status, onEdit }) {
   );
 }
 
+// ── Main App ───────────────────────────────────────────────────────────────
+
 function App() {
-  const [step, setStep] = useState(0);
-  const [clientId, setClientId] = useState("");
+  const [tab, setTab] = useState("setup");
   const [gisReady, setGisReady] = useState(false);
   const [gisError, setGisError] = useState(false);
+  const [clientId, setClientId] = useState("");
   const [token, setToken] = useState(null);
   const [userEmail, setUserEmail] = useState("");
-  const [campaign, setCampaign] = useState({ senderName:"", product:"", tone:"Professional", subjectHint:"" });
+  const [notifPermission, setNotifPermission] = useState(Notification?.permission||"default");
+
+  const [campaign, setCampaign] = useState({senderName:"",product:"",tone:"Professional",subjectHint:""});
   const [contacts, setContacts] = useState([]);
-  const [newC, setNewC] = useState({ name:"", email:"", company:"", notes:"" });
+  const [newC, setNewC] = useState({name:"",email:"",company:"",jobTitle:"",linkedIn:"",notes:""});
+  const [csvDrag, setCsvDrag] = useState(false);
+
   const [emails, setEmails] = useState([]);
   const [generating, setGenerating] = useState(false);
   const [sendStatus, setSendStatus] = useState({});
   const [sending, setSending] = useState(false);
   const [allSent, setAllSent] = useState(false);
+  const [threadIds, setThreadIds] = useState({});
+  const [replyCount, setReplyCount] = useState(0);
 
-  useEffect(() => {
-    if (window.google?.accounts?.oauth2) { setGisReady(true); return; }
-    const s = document.createElement("script");
-    s.src = "https://accounts.google.com/gsi/client";
-    s.onload = () => setGisReady(true);
-    s.onerror = () => setGisError(true);
+  const pollRef = useRef(null);
+  const tokenRef = useRef(token);
+  useEffect(()=>{tokenRef.current=token;},[token]);
+
+  // Load GIS
+  useEffect(()=>{
+    if(window.google?.accounts?.oauth2){setGisReady(true);return;}
+    const s=document.createElement("script");
+    s.src="https://accounts.google.com/gsi/client";
+    s.onload=()=>setGisReady(true);
+    s.onerror=()=>setGisError(true);
     document.head.appendChild(s);
-  }, []);
+  },[]);
 
-  const connectGmail = () => {
-    if (!gisReady || !clientId.trim()) return;
-    try {
-      const client = window.google.accounts.oauth2.initTokenClient({
-        client_id: clientId.trim(),
-        scope: "https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/userinfo.email",
-        callback: async (resp) => {
-          if (resp.error) { alert(`Auth error: ${resp.error}`); return; }
+  // Reply polling
+  const pollReplies = useCallback(async()=>{
+    const t = tokenRef.current;
+    if(!t || Object.keys(threadIds).length===0) return;
+    let newReplies = 0;
+    const updatedEmails = [...emails];
+    for(let i=0;i<emails.length;i++){
+      const tid = threadIds[i];
+      if(!tid||sendStatus[i]!=="sent") continue;
+      try{
+        const reply = await getReplySnippet(t, tid, userEmail);
+        if(reply && !updatedEmails[i].replySnippet){
+          updatedEmails[i]={...updatedEmails[i],replySnippet:reply};
+          setSendStatus(p=>({...p,[i]:"replied"}));
+          newReplies++;
+          notify(`${updatedEmails[i].contact.name} replied!`, reply.snippet, ()=>setTab("sent"));
+        }
+      }catch{}
+    }
+    if(newReplies>0){ setEmails([...updatedEmails]); setReplyCount(p=>p+newReplies); }
+  },[emails,threadIds,sendStatus,userEmail]);
+
+  useEffect(()=>{
+    if(allSent && Object.keys(threadIds).length>0){
+      pollRef.current = setInterval(pollReplies, POLL_INTERVAL);
+      return ()=>clearInterval(pollRef.current);
+    }
+  },[allSent,threadIds,pollReplies]);
+
+  const connectGmail = ()=>{
+    if(!gisReady||!clientId.trim()) return;
+    try{
+      const client=window.google.accounts.oauth2.initTokenClient({
+        client_id:clientId.trim(),
+        scope:"https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/userinfo.email",
+        callback:async(resp)=>{
+          if(resp.error){alert(`Auth error: ${resp.error}`);return;}
           setToken(resp.access_token);
-          const info = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-            headers:{ Authorization:`Bearer ${resp.access_token}` }
-          }).then(r=>r.json()).catch(()=>({}));
-          setUserEmail(info.email || "your Gmail account");
-          setCampaign(p=>({...p, senderName: info.name || p.senderName}));
-          setStep(1);
+          const info=await fetch("https://www.googleapis.com/oauth2/v3/userinfo",{headers:{Authorization:`Bearer ${resp.access_token}`}}).then(r=>r.json()).catch(()=>({}));
+          setUserEmail(info.email||"your Gmail account");
+          setCampaign(p=>({...p,senderName:info.name||p.senderName}));
+          if(Notification?.permission==="default"){ Notification.requestPermission().then(p=>setNotifPermission(p)); }
+          setTab("campaign");
         },
       });
       client.requestAccessToken();
-    } catch(e) { alert(`Could not start auth: ${e.message}`); }
+    }catch(e){alert(`Could not start auth: ${e.message}`);}
   };
 
-  const addContact = () => {
-    if (!newC.name.trim() || !newC.email.trim()) return;
+  const addContact = ()=>{
+    if(!newC.name.trim()||!newC.email.trim()) return;
     setContacts(p=>[...p,{...newC,id:Date.now()}]);
-    setNewC({ name:"", email:"", company:"", notes:"" });
+    setNewC({name:"",email:"",company:"",jobTitle:"",linkedIn:"",notes:""});
   };
 
-  const generateEmails = async () => {
-    setGenerating(true); setSendStatus({}); setAllSent(false);
-    const placeholders = contacts.map(c=>({contact:c,loading:true,subject:"",body:""}));
-    setEmails(placeholders); setStep(3);
-    const result = [...placeholders];
-    for (let i = 0; i < contacts.length; i++) {
-      const c = contacts[i];
-      try {
-        const res = await fetch("https://api.anthropic.com/v1/messages", {
-          method:"POST", headers:{"Content-Type":"application/json"},
-          body: JSON.stringify({
-            model:"claude-sonnet-4-6", max_tokens:1000,
-            messages:[{role:"user",content:`You are an expert sales copywriter. Write a personalized cold outreach email.
+  const handleCSV = (text)=>{
+    const parsed = parseCSV(text);
+    if(parsed.length===0){alert("No contacts found. Make sure your CSV has 'name' and 'email' columns.");return;}
+    setContacts(p=>[...p,...parsed]);
+  };
+
+  const handleCSVFile = (file)=>{
+    const r=new FileReader();
+    r.onload=e=>handleCSV(e.target.result);
+    r.readAsText(file);
+  };
+
+  const generateEmail = async (index, contact)=>{
+    const res = await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-6",max_tokens:1000,
+        messages:[{role:"user",content:`You are an expert sales copywriter. Write a highly personalized cold outreach email.
 
 Sender: ${campaign.senderName} (${userEmail})
 Product/Service: ${campaign.product}
@@ -387,219 +369,372 @@ Tone: ${campaign.tone}
 ${campaign.subjectHint?`Subject direction: ${campaign.subjectHint}`:""}
 
 Recipient:
-- Name: ${c.name}
-- Email: ${c.email}
-${c.company?`- Company: ${c.company}`:""}
-${c.notes?`- Notes: ${c.notes}`:""}
+- Name: ${contact.name}
+- Email: ${contact.email}
+${contact.company?`- Company: ${contact.company}`:""}
+${contact.jobTitle?`- Job title: ${contact.jobTitle}`:""}
+${contact.linkedIn?`- LinkedIn: ${contact.linkedIn}`:""}
+${contact.notes?`- Notes: ${contact.notes}`:""}
 
-Write a concise, genuine email (3-4 paragraphs). No generic openers. End with a low-friction CTA.
+Write a concise, genuine email (3-4 paragraphs). Avoid generic openers like "I hope this email finds you well". Reference specific details about the recipient where possible. End with one clear, low-friction CTA (e.g. a question, not "schedule a call").
 
 Respond ONLY as JSON, no markdown:
 {"subject": "...", "body": "..."}`}]
-          }),
-        });
-        const data = await res.json();
-        const text = (data.content||[]).map(b=>b.text||"").join("").replace(/```json|```/g,"").trim();
-        const parsed = JSON.parse(text);
-        result[i] = {contact:c,loading:false,subject:parsed.subject,body:parsed.body};
-      } catch {
-        result[i] = {contact:c,loading:false,subject:"Draft",body:"Could not generate — edit manually.",error:true};
+      }),
+    });
+    const data=await res.json();
+    const text=(data.content||[]).map(b=>b.text||"").join("").replace(/```json|```/g,"").trim();
+    return JSON.parse(text);
+  };
+
+  const generateAll = async()=>{
+    setGenerating(true);setSendStatus({});setAllSent(false);setThreadIds({});setReplyCount(0);
+    const placeholders=contacts.map(c=>({contact:c,loading:true,subject:"",body:""}));
+    setEmails(placeholders);setTab("emails");
+    const result=[...placeholders];
+    for(let i=0;i<contacts.length;i++){
+      try{
+        const parsed=await generateEmail(i,contacts[i]);
+        result[i]={contact:contacts[i],loading:false,subject:parsed.subject,body:parsed.body};
+      }catch{
+        result[i]={contact:contacts[i],loading:false,subject:"Draft",body:"Could not generate — edit manually.",error:true};
       }
       setEmails([...result]);
     }
     setGenerating(false);
   };
 
-  const handleEdit = (i, field, val) => {
-    setEmails(prev=>{ const n=[...prev]; n[i]={...n[i],[field]:val}; return n; });
-  };
-
-  const sendAll = async () => {
-    setSending(true);
-    const status = {};
-    for (let i = 0; i < emails.length; i++) {
-      const e = emails[i];
-      if (e.loading || e.error) { status[i]="skipped"; setSendStatus({...status}); continue; }
-      status[i]="pending"; setSendStatus({...status});
-      try {
-        await gmailSend(token, userEmail, e.contact.email, e.subject, e.body);
-        status[i]="sent";
-      } catch(err) { status[i]=`error: ${err.message}`; }
-      setSendStatus({...status});
-      if (i < emails.length-1) await new Promise(r=>setTimeout(r,350));
+  const regenOne = async(index)=>{
+    setEmails(p=>{const n=[...p];n[index]={...n[index],loading:true};return n;});
+    try{
+      const parsed=await generateEmail(index,emails[index].contact);
+      setEmails(p=>{const n=[...p];n[index]={...n[index],loading:false,subject:parsed.subject,body:parsed.body};return n;});
+    }catch{
+      setEmails(p=>{const n=[...p];n[index]={...n[index],loading:false};return n;});
     }
-    setSending(false); setAllSent(true);
   };
 
-  const canSend = !generating && emails.length>0 && emails.every(e=>!e.loading) && !sending && !allSent;
-  const sentCount = Object.values(sendStatus).filter(s=>s==="sent").length;
-  const canStep1 = campaign.senderName.trim() && campaign.product.trim();
-  const origin = window.location.origin;
+  const handleEdit=(i,field,val)=>{
+    setEmails(p=>{const n=[...p];n[i]={...n[i],[field]:val};return n;});
+  };
+
+  const sendAll=async()=>{
+    setSending(true);
+    const status={};const tids={};
+    for(let i=0;i<emails.length;i++){
+      const e=emails[i];
+      if(e.loading||e.error){status[i]="skipped";setSendStatus({...status});continue;}
+      status[i]="pending";setSendStatus({...status});
+      try{
+        const result=await gmailSend(token,userEmail,e.contact.email,e.subject,e.body);
+        status[i]="sent";
+        if(result.threadId) tids[i]=result.threadId;
+      }catch(err){status[i]=`error: ${err.message}`;}
+      setSendStatus({...status});
+      if(i<emails.length-1) await new Promise(r=>setTimeout(r,350));
+    }
+    setThreadIds(tids);setSending(false);setAllSent(true);
+  };
+
+  const canSend=!generating&&emails.length>0&&emails.every(e=>!e.loading)&&!sending&&!allSent;
+  const sentCount=Object.values(sendStatus).filter(s=>s==="sent").length;
+  const repliedCount=Object.values(sendStatus).filter(s=>s==="replied").length;
+  const errorCount=Object.values(sendStatus).filter(s=>s?.startsWith("error")).length;
+  const canStep2=campaign.senderName.trim()&&campaign.product.trim();
+  const origin=window.location.origin;
+
+  // ── Tabs ────────────────────────────────────────────────────────────────
+
+  const tabs = token ? [
+    {id:"campaign",label:"Campaign"},
+    {id:"contacts",label:"Contacts",badge:contacts.length||null},
+    {id:"emails",label:"Emails",badge:emails.length||null},
+    {id:"sent",label:"Sent",badge:repliedCount||null},
+  ] : [];
 
   return (
     <div>
-      <p style={{fontSize:24,fontWeight:600,color:"#1a1d2e",marginBottom:4}}>Email Outreach Bot</p>
-      <p style={{fontSize:14,color:"#9198b0",marginBottom:"1.5rem"}}>Claude writes. You review. Gmail sends.</p>
+      <div className="header-bar">
+        <div className="brand">✉ Email Outreach Bot</div>
+        {token && (
+          <div className="user-chip">
+            <div className="avatar avatar-sm" style={{width:26,height:26,fontSize:10}}>{initials(userEmail.split("@")[0])}</div>
+            <span>{userEmail}</span>
+            {notifPermission==="granted"&&<span title="Reply notifications active" style={{color:"#6366f1"}}>🔔</span>}
+          </div>
+        )}
+      </div>
 
-      <Steps labels={["Connect Gmail","Campaign","Contacts","Review & Send"]} current={step}/>
+      {token && (
+        <div className="tab-bar">
+          {tabs.map(t=>(
+            <button key={t.id} className={`tab${tab===t.id?" active":""}`} onClick={()=>setTab(t.id)}>
+              {t.label}
+              {t.badge?<span className="tab-badge">{t.badge}</span>:null}
+            </button>
+          ))}
+        </div>
+      )}
 
-      {/* STEP 0 */}
-      {step===0 && (
-        <div className="flex-col">
-          {gisError && <div className="card-danger">Could not load Google's auth library. Make sure you're opening this file via a local server (not as a file://) — see the setup note below.</div>}
+      {/* ── SETUP ─────────────────────────────────────────────────────── */}
+      {tab==="setup"&&(
+        <div className="flex-col fade-in">
+          {gisError&&<div className="card-danger">Could not load Google's auth library. Open this file via a local server — see the note below.</div>}
           <div className="card flex-col">
-            <p style={{fontSize:14,fontWeight:500}}>Paste your Google OAuth Client ID</p>
-            <input placeholder="123456789-abc…apps.googleusercontent.com" value={clientId} onChange={e=>setClientId(e.target.value)} style={{fontFamily:"monospace",fontSize:12}}/>
+            <p style={{fontSize:15,fontWeight:600}}>Connect your Gmail account</p>
+            <div>
+              <label>OAuth Client ID</label>
+              <input placeholder="123456789-abc….apps.googleusercontent.com" value={clientId} onChange={e=>setClientId(e.target.value)} style={{fontFamily:"monospace",fontSize:12}}/>
+            </div>
             <div>
               <button className="btn-primary" onClick={connectGmail} disabled={!gisReady||!clientId.trim()}>
-                {!gisReady&&!gisError ? <span className="spin">⟳</span> : "🔐"} {!gisReady&&!gisError?"Loading…":"Authorize Gmail"}
+                {!gisReady&&!gisError?<><span className="spin">⟳</span>Loading…</>:<>🔐 Authorize Gmail</>}
               </button>
             </div>
           </div>
-          <div className="card-info">
-            <p style={{fontWeight:500,marginBottom:8}}>⚙️ One-time Google Cloud setup</p>
-            <ol className="setup-list">
-              <li>Go to <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a> → create a new project</li>
+          <div className="card-accent">
+            <p style={{fontWeight:600,marginBottom:8}}>⚙️ One-time Google Cloud setup</p>
+            <ol className="setup">
+              <li>Go to <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a> → create a project</li>
               <li>APIs & Services → Library → enable <strong>Gmail API</strong></li>
-              <li>APIs & Services → Credentials → Create → <strong>OAuth client ID</strong></li>
-              <li>Application type: <strong>Web application</strong></li>
-              <li>Under Authorized JavaScript origins add: <code className="inline">{origin}</code></li>
+              <li>APIs & Services → OAuth consent screen → External → add yourself as a test user</li>
+              <li>Credentials → Create → OAuth client ID → Web application</li>
+              <li>Authorized JavaScript origins: <code className="inline">{origin}</code></li>
               <li>Copy the Client ID and paste above</li>
             </ol>
           </div>
           <div className="card-warning">
-            <strong>📁 Running this file locally?</strong> Open a terminal in the same folder and run:<br/>
-            <code style={{background:"rgba(0,0,0,0.08)",padding:"2px 6px",borderRadius:4,fontFamily:"monospace",fontSize:12}}>python3 -m http.server 8080</code><br/>
-            Then open <strong>http://localhost:8080/email-bot.html</strong> in your browser. Add <code className="inline">http://localhost:8080</code> as your authorized origin in Google Cloud.
+            📁 <strong>Running locally?</strong> Run <code style={{background:"rgba(0,0,0,.08)",padding:"1px 6px",borderRadius:4,fontFamily:"monospace",fontSize:12}}>python3 -m http.server 8080</code> in the file's folder, open <strong>http://localhost:8080/email-bot.html</strong>, and use <code className="inline">http://localhost:8080</code> as your authorized origin.
           </div>
         </div>
       )}
 
-      {/* STEP 1 */}
-      {step===1 && (
-        <div className="flex-col">
-          <div className="card-success">✓ Connected as <strong>{userEmail}</strong></div>
-          <div>
-            <label>Your name</label>
-            <input value={campaign.senderName} onChange={e=>setCampaign(p=>({...p,senderName:e.target.value}))} placeholder="Alex Johnson"/>
-          </div>
-          <div>
-            <label>What are you selling? <span className="label-muted">Be specific — Claude uses this to personalise</span></label>
-            <textarea value={campaign.product} onChange={e=>setCampaign(p=>({...p,product:e.target.value}))} rows={4} placeholder="E.g. A B2B analytics tool that helps e-commerce teams identify at-risk customers 30 days before they churn…" style={{resize:"vertical"}}/>
-          </div>
-          <div>
-            <label>Subject line direction <span className="label-muted">— optional</span></label>
-            <input value={campaign.subjectHint} onChange={e=>setCampaign(p=>({...p,subjectHint:e.target.value}))} placeholder='E.g. "lead with a question" or "mention their industry"'/>
-          </div>
-          <div>
-            <label style={{marginBottom:8}}>Tone</label>
-            <div className="grid-2">
-              {TONES.map(t=>(
-                <button key={t} className={`tone-btn ${campaign.tone===t?"active":"inactive"}`} onClick={()=>setCampaign(p=>({...p,tone:t}))}>
-                  <p style={{fontSize:13,fontWeight:500,color:campaign.tone===t?"#4347b5":"#1a1d2e"}}>{t}</p>
-                  <p style={{fontSize:11,color:campaign.tone===t?"#6366f1":"#9198b0",marginTop:2}}>{TONE_DESC[t]}</p>
-                </button>
-              ))}
+      {/* ── CAMPAIGN ──────────────────────────────────────────────────── */}
+      {tab==="campaign"&&(
+        <div className="flex-col fade-in">
+          <div className="card-success">✓ Connected as <strong>{userEmail}</strong>{notifPermission==="granted"?" · Reply notifications on":""}</div>
+          <div className="card flex-col">
+            <p style={{fontSize:15,fontWeight:600}}>Campaign settings</p>
+            <div>
+              <label>Your name</label>
+              <input value={campaign.senderName} onChange={e=>setCampaign(p=>({...p,senderName:e.target.value}))} placeholder="Alex Johnson"/>
+            </div>
+            <div>
+              <label>What are you selling? <span className="muted small">The more detail, the better Claude personalises</span></label>
+              <textarea value={campaign.product} onChange={e=>setCampaign(p=>({...p,product:e.target.value}))} rows={4} placeholder="E.g. A B2B analytics tool that helps e-commerce teams identify at-risk customers 30 days before they churn. Integrates with Shopify in one click. Key differentiator: no data scientists needed." style={{resize:"vertical"}}/>
+            </div>
+            <div>
+              <label>Subject line direction <span className="muted small">— optional hint for Claude</span></label>
+              <input value={campaign.subjectHint} onChange={e=>setCampaign(p=>({...p,subjectHint:e.target.value}))} placeholder='E.g. "lead with a pain-point question" or "keep it under 8 words"'/>
+            </div>
+            <div>
+              <label className="mb-8">Email tone</label>
+              <div className="grid-2">
+                {TONES.map(t=>(
+                  <button key={t} className={`tone-btn${campaign.tone===t?" active":""}`} onClick={()=>setCampaign(p=>({...p,tone:t}))}>
+                    <p style={{fontSize:13,fontWeight:500,color:campaign.tone===t?"#4347b5":"#1a1d2e"}}>{t}</p>
+                    <p className="small" style={{color:campaign.tone===t?"#6366f1":"#9198b0",marginTop:2}}>{TONE_DESC[t]}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
           <div style={{display:"flex",justifyContent:"flex-end"}}>
-            <button className="btn-primary" onClick={()=>setStep(2)} disabled={!canStep1}>Add contacts →</button>
+            <button className="btn-primary" onClick={()=>setTab("contacts")} disabled={!canStep2}>Add contacts →</button>
           </div>
         </div>
       )}
 
-      {/* STEP 2 */}
-      {step===2 && (
-        <div className="flex-col">
+      {/* ── CONTACTS ──────────────────────────────────────────────────── */}
+      {tab==="contacts"&&(
+        <div className="flex-col fade-in">
+          {/* CSV import */}
           <div className="card flex-col">
-            <p style={{fontSize:14,fontWeight:500}}>Add a contact</p>
-            <div className="grid-2">
-              {[
-                {key:"name",label:"Name *",ph:"Jane Smith"},
-                {key:"email",label:"Email *",ph:"jane@company.com",type:"email"},
-                {key:"company",label:"Company",ph:"Acme Corp"},
-                {key:"notes",label:"Notes for personalisation",ph:"Met at SaaS Summit, uses Salesforce"},
-              ].map(f=>(
-                <div key={f.key}>
-                  <label>{f.label}</label>
-                  <input type={f.type||"text"} placeholder={f.ph} value={newC[f.key]} onChange={e=>setNewC(p=>({...p,[f.key]:e.target.value}))} onKeyDown={e=>e.key==="Enter"&&addContact()}/>
-                </div>
-              ))}
-            </div>
-            <div>
-              <button className="btn-secondary" onClick={addContact} disabled={!newC.name.trim()||!newC.email.trim()}>+ Add contact</button>
+            <p style={{fontSize:15,fontWeight:600}}>Import contacts</p>
+            <div
+              className={`csv-zone${csvDrag?" over":""}`}
+              onDragOver={e=>{e.preventDefault();setCsvDrag(true)}}
+              onDragLeave={()=>setCsvDrag(false)}
+              onDrop={e=>{e.preventDefault();setCsvDrag(false);const f=e.dataTransfer.files[0];if(f)handleCSVFile(f);}}
+              onClick={()=>document.getElementById("csvInput").click()}
+            >
+              <p style={{fontSize:14,fontWeight:500,color:"#4a5070",marginBottom:4}}>📂 Drop a CSV file here, or click to browse</p>
+              <p className="small muted">Columns: name, email, company, jobTitle, linkedIn, notes</p>
+              <input id="csvInput" type="file" accept=".csv" style={{display:"none"}} onChange={e=>{if(e.target.files[0])handleCSVFile(e.target.files[0])}}/>
             </div>
           </div>
 
-          {contacts.length>0 ? (
+          {/* Manual add */}
+          <div className="card flex-col">
+            <p style={{fontSize:15,fontWeight:600}}>Add manually</p>
+            <div className="grid-2">
+              {[
+                {k:"name",l:"Name *",p:"Jane Smith"},
+                {k:"email",l:"Email *",p:"jane@company.com",t:"email"},
+                {k:"company",l:"Company",p:"Acme Corp"},
+                {k:"jobTitle",l:"Job title",p:"Head of Marketing"},
+                {k:"linkedIn",l:"LinkedIn URL",p:"linkedin.com/in/jane"},
+                {k:"notes",l:"Personalisation notes",p:"Met at SaaS Summit; uses HubSpot"},
+              ].map(f=>(
+                <div key={f.k}>
+                  <label>{f.l}</label>
+                  <input type={f.t||"text"} placeholder={f.p} value={newC[f.k]} onChange={e=>setNewC(p=>({...p,[f.k]:e.target.value}))} onKeyDown={e=>e.key==="Enter"&&addContact()}/>
+                </div>
+              ))}
+            </div>
+            <div><button className="btn-secondary" onClick={addContact} disabled={!newC.name.trim()||!newC.email.trim()}>+ Add contact</button></div>
+          </div>
+
+          {contacts.length>0?(
             <div>
-              <p style={{fontSize:13,color:"#9198b0",marginBottom:10}}>{contacts.length} contact{contacts.length!==1?"s":""} added</p>
+              <div className="flex-between mb-8">
+                <p className="small muted">{contacts.length} contact{contacts.length!==1?"s":""} added</p>
+                <button className="btn-danger" onClick={()=>setContacts([])}>✕ Clear all</button>
+              </div>
               <div className="flex-col" style={{gap:8}}>
-                {contacts.map(c=>{
-                  const initials=c.name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
-                  return (
-                    <div key={c.id} className="flex-row flex-between" style={{background:"#fff",border:"1px solid #e4e7f0",borderRadius:10,padding:"10px 14px"}}>
-                      <div className="flex-row gap-10">
-                        <div className="avatar">{initials}</div>
-                        <div>
-                          <p style={{fontSize:14,fontWeight:500}}>{c.name}</p>
-                          <p style={{fontSize:12,color:"#9198b0"}}>{c.email}{c.company?` · ${c.company}`:""}</p>
-                        </div>
-                      </div>
-                      <button onClick={()=>setContacts(p=>p.filter(x=>x.id!==c.id))} style={{background:"none",border:"none",cursor:"pointer",color:"#9198b0",fontSize:16,padding:4}}>✕</button>
+                {contacts.map(c=>(
+                  <div key={c.id} className="contact-row">
+                    <div className="avatar avatar-sm">{initials(c.name)}</div>
+                    <div style={{flex:1,minWidth:0}}>
+                      <p style={{fontSize:13,fontWeight:500}}>{c.name}{c.jobTitle?<span className="muted small"> · {c.jobTitle}</span>:null}</p>
+                      <p className="small muted" style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.email}{c.company?` · ${c.company}`:""}{c.notes?` · ${c.notes}`:""}</p>
                     </div>
-                  );
-                })}
+                    <button className="btn-icon" onClick={()=>setContacts(p=>p.filter(x=>x.id!==c.id))} title="Remove">✕</button>
+                  </div>
+                ))}
               </div>
             </div>
-          ) : (
-            <div className="empty-state">No contacts yet — add your first one above.</div>
+          ):(
+            <div style={{textAlign:"center",padding:"2rem",border:"1px dashed #dde1ec",borderRadius:12,color:"#9198b0",fontSize:14}}>
+              No contacts yet — import a CSV or add manually above.
+            </div>
           )}
 
           <div className="flex-between">
-            <button className="btn-secondary" onClick={()=>setStep(1)}>← Back</button>
-            <button className="btn-primary" onClick={generateEmails} disabled={contacts.length===0}>
+            <button className="btn-secondary" onClick={()=>setTab("campaign")}>← Back</button>
+            <button className="btn-primary" onClick={generateAll} disabled={contacts.length===0}>
               ✦ Generate {contacts.length||""} email{contacts.length!==1?"s":""}
             </button>
           </div>
         </div>
       )}
 
-      {/* STEP 3 */}
-      {step===3 && (
-        <div className="flex-col">
-          <div className={`status-bar ${allSent?"done":generating?"writing":"idle"}`}>
+      {/* ── EMAILS ────────────────────────────────────────────────────── */}
+      {tab==="emails"&&(
+        <div className="flex-col fade-in">
+          {/* Status bar */}
+          <div style={{
+            display:"flex",alignItems:"center",justifyContent:"space-between",
+            padding:"12px 16px",borderRadius:12,
+            background:allSent?"#ecfdf5":generating?"#fffbeb":"#fff",
+            border:`1px solid ${allSent?"#86efac":generating?"#fcd34d":"#e4e7f0"}`,
+          }}>
             <div className="flex-row gap-8">
-              {generating
-                ? <><span className="spin">⟳</span><span style={{fontSize:14,fontWeight:500,color:"#92400e"}}>Writing emails… {emails.filter(e=>!e.loading).length} of {emails.length} done</span></>
-                : allSent
-                  ? <><span>✓</span><span style={{fontSize:14,fontWeight:500,color:"#166534"}}>{sentCount} email{sentCount!==1?"s":""} sent from {userEmail}</span></>
-                  : <span style={{fontSize:14,fontWeight:500}}>{emails.length} email{emails.length!==1?"s":""} ready — review and send</span>
-              }
+              {generating&&<span className="spin">⟳</span>}
+              {allSent&&<span>✓</span>}
+              <span style={{fontSize:14,fontWeight:500,color:generating?"#92400e":allSent?"#166534":"#1a1d2e"}}>
+                {generating?`Writing… ${emails.filter(e=>!e.loading).length}/${emails.length}`
+                  :allSent?`${sentCount} sent · ${repliedCount} replied · ${errorCount} failed`
+                  :`${emails.length} email${emails.length!==1?"s":""} ready`}
+              </span>
             </div>
-            {canSend && (
-              <button className="btn-send" onClick={sendAll}>
-                ➤ Send all {emails.length}
-              </button>
-            )}
+            <div className="flex-row gap-8">
+              {!generating&&!allSent&&(
+                <button className="btn-secondary" onClick={generateAll}>↺ Regen all</button>
+              )}
+              {canSend&&(
+                <button className="btn-send" onClick={sendAll}>➤ Send all {emails.length}</button>
+              )}
+            </div>
           </div>
 
           <div className="flex-col" style={{gap:10}}>
             {emails.map((item,i)=>(
-              <EmailCard key={i} item={item} index={i} status={sendStatus[i]} onEdit={handleEdit}/>
+              <EmailCard key={i} item={item} index={i} status={sendStatus[i]} onEdit={handleEdit} onRegenerate={regenOne} disabled={!!sendStatus[i]}/>
             ))}
           </div>
 
-          {!generating && !allSent && (
-            <div className="flex-between">
-              <button className="btn-secondary" onClick={()=>setStep(2)}>← Edit contacts</button>
-              <button className="btn-secondary" onClick={generateEmails}>↺ Regenerate all</button>
+          {!generating&&!allSent&&(
+            <div style={{display:"flex",justifyContent:"flex-start"}}>
+              <button className="btn-secondary" onClick={()=>setTab("contacts")}>← Edit contacts</button>
+            </div>
+          )}
+          {allSent&&(
+            <div style={{display:"flex",justifyContent:"center"}}>
+              <button className="btn-secondary" onClick={()=>setTab("sent")}>View sent dashboard →</button>
             </div>
           )}
         </div>
       )}
 
-      <p style={{textAlign:"center",fontSize:12,color:"#c5c8d8",marginTop:"2rem"}}>Powered by Claude · Sends via your Gmail account</p>
+      {/* ── SENT DASHBOARD ────────────────────────────────────────────── */}
+      {tab==="sent"&&(
+        <div className="flex-col fade-in">
+          {emails.length===0?(
+            <div style={{textAlign:"center",padding:"3rem",color:"#9198b0"}}>
+              <p style={{fontSize:16,marginBottom:8}}>No emails sent yet</p>
+              <p className="small">Go to Contacts to start a campaign</p>
+            </div>
+          ):(
+            <>
+              {/* Stats */}
+              <div className="grid-3" style={{gap:10}}>
+                {[
+                  {label:"Sent",value:sentCount,color:"#166534",bg:"#ecfdf5",border:"#86efac"},
+                  {label:"Replied",value:repliedCount,color:"#4347b5",bg:"#eef0fd",border:"#c7caff"},
+                  {label:"Reply rate",value:sentCount?`${Math.round(repliedCount/sentCount*100)}%`:"—",color:"#1a1d2e",bg:"#fff",border:"#e4e7f0"},
+                ].map(s=>(
+                  <div key={s.label} style={{background:s.bg,border:`1px solid ${s.border}`,borderRadius:12,padding:"1rem",textAlign:"center"}}>
+                    <p style={{fontSize:26,fontWeight:600,color:s.color}}>{s.value}</p>
+                    <p className="small muted">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Notification status */}
+              {notifPermission!=="granted"&&(
+                <div className="card-warning">
+                  🔔 <strong>Enable browser notifications</strong> to get alerted when someone replies.{" "}
+                  <button className="btn-ghost" style={{marginLeft:8}} onClick={()=>Notification.requestPermission().then(p=>setNotifPermission(p))}>Enable</button>
+                </div>
+              )}
+              {notifPermission==="granted"&&allSent&&(
+                <div className="card-success">🔔 Monitoring for replies every 5 minutes — you'll get a browser notification when someone responds.</div>
+              )}
+
+              {/* Email list */}
+              <div className="flex-col" style={{gap:8}}>
+                {emails.map((item,i)=>{
+                  const s=sendStatus[i];
+                  if(!s||s==="skipped") return null;
+                  return (
+                    <div key={i} className={`email-card${s==="replied"?" replied":s==="sent"?" sent":""}`}>
+                      <div className="flex-between">
+                        <div className="flex-row gap-10">
+                          <div className="avatar avatar-sm">{initials(item.contact.name)}</div>
+                          <div>
+                            <p style={{fontSize:14,fontWeight:500}}>{item.contact.name}</p>
+                            <p className="small muted">{item.contact.email}</p>
+                          </div>
+                        </div>
+                        <StatusPill status={s}/>
+                      </div>
+                      <p className="small muted mt-8" style={{paddingLeft:46}}>Subject: {item.subject}</p>
+                      {item.replySnippet&&(
+                        <div className="reply-banner" style={{marginLeft:46}}>
+                          💬 <strong>Their reply:</strong> "{item.replySnippet.snippet}"
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      <p style={{textAlign:"center",fontSize:12,color:"#c5c8d8",marginTop:"2.5rem"}}>Powered by Claude · Sends via Gmail</p>
     </div>
   );
 }
