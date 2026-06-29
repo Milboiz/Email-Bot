@@ -266,6 +266,9 @@ function App() {
   const [contacts, setContacts] = useState([]);
   const [newC, setNewC] = useState({name:"",email:"",company:"",jobTitle:"",linkedIn:"",notes:""});
   const [csvDrag, setCsvDrag] = useState(false);
+  const [pasteText, setPasteText] = useState("");
+  const [parsing, setParsing] = useState(false);
+  const [parsedPreview, setParsedPreview] = useState(null); // array of contacts to confirm
 
   const [emails, setEmails] = useState([]);
   const [generating, setGenerating] = useState(false);
@@ -336,6 +339,42 @@ function App() {
       });
       client.requestAccessToken();
     }catch(e){alert(`Could not start auth: ${e.message}`);}
+  };
+
+  const parseContactsFromText = async()=>{
+    if(!pasteText.trim()) return;
+    setParsing(true);
+    setParsedPreview(null);
+    try{
+      const res = await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          model:"claude-sonnet-4-6",max_tokens:2000,
+          messages:[{role:"user",content:`Extract all contact information from the text below. Return a JSON array of contacts. Each contact should have these fields: name, email, company, jobTitle, linkedIn, notes. Only include contacts where you can identify at least a name and email address. If a field is not present, use an empty string.
+
+Text:
+${pasteText}
+
+Respond ONLY with a JSON array, no markdown, no explanation:
+[{"name":"...","email":"...","company":"...","jobTitle":"...","linkedIn":"...","notes":"..."}]`}]
+        }),
+      });
+      const data=await res.json();
+      const text=(data.content||[]).map(b=>b.text||"").join("").replace(/```json|```/g,"").trim();
+      const parsed=JSON.parse(text);
+      const withIds=parsed.filter(c=>c.name&&c.email).map(c=>({...c,id:Date.now()+Math.random()}));
+      if(withIds.length===0){ alert("No contacts with both a name and email could be found. Try including email addresses in your text."); }
+      else{ setParsedPreview(withIds); }
+    }catch(e){
+      alert("Could not parse contacts — try formatting the text more clearly, or add them manually.");
+    }
+    setParsing(false);
+  };
+
+  const confirmParsed=()=>{
+    setContacts(p=>[...p,...parsedPreview]);
+    setParsedPreview(null);
+    setPasteText("");
   };
 
   const addContact = ()=>{
@@ -564,6 +603,49 @@ Respond ONLY as JSON, no markdown:
             </div>
           </div>
 
+          {/* Paste text */}
+          <div className="card flex-col">
+            <div className="flex-between">
+              <p style={{fontSize:15,fontWeight:600}}>Paste a list</p>
+              <span className="small muted">Any format — Claude figures it out</span>
+            </div>
+            <textarea
+              placeholder={`Paste anything — spreadsheet rows, LinkedIn profiles, email signatures, a messy list — Claude will extract the contacts.\n\nExamples:\n  Jane Smith, jane@acme.com, Head of Marketing, Acme Corp\n  John Doe | john@startup.io | CEO\n  Bob Lee\n  bob@company.com\n  VP Sales at TechCo`}
+              value={pasteText}
+              onChange={e=>setPasteText(e.target.value)}
+              rows={8}
+              style={{resize:"vertical",fontFamily:"monospace",fontSize:12,lineHeight:1.6}}
+            />
+            {parsedPreview&&(
+              <div style={{background:"#eef0fd",border:"1px solid #c7caff",borderRadius:10,padding:"12px 14px"}}>
+                <div className="flex-between mb-8">
+                  <p style={{fontSize:13,fontWeight:600,color:"#4347b5"}}>✦ Claude found {parsedPreview.length} contact{parsedPreview.length!==1?"s":""}</p>
+                  <button className="btn-icon" style={{color:"#9198b0"}} onClick={()=>setParsedPreview(null)}>✕</button>
+                </div>
+                <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
+                  {parsedPreview.map((c,i)=>(
+                    <div key={i} style={{background:"#fff",borderRadius:8,padding:"8px 12px",display:"flex",alignItems:"center",gap:8}}>
+                      <div className="avatar avatar-sm" style={{width:28,height:28,fontSize:10}}>{initials(c.name)}</div>
+                      <div style={{flex:1,minWidth:0}}>
+                        <p style={{fontSize:13,fontWeight:500}}>{c.name}{c.jobTitle?<span className="muted small"> · {c.jobTitle}</span>:null}</p>
+                        <p className="small muted" style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.email}{c.company?` · ${c.company}`:""}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex-row gap-8">
+                  <button className="btn-primary" style={{fontSize:13,padding:"8px 16px"}} onClick={confirmParsed}>+ Add all {parsedPreview.length}</button>
+                  <button className="btn-secondary" style={{fontSize:13}} onClick={()=>setParsedPreview(null)}>Discard</button>
+                </div>
+              </div>
+            )}
+            <div>
+              <button className="btn-primary" onClick={parseContactsFromText} disabled={!pasteText.trim()||parsing}>
+                {parsing?<><span className="spin">⟳</span>Parsing…</>:<>✦ Parse with AI</>}
+              </button>
+            </div>
+          </div>
+
           {/* Manual add */}
           <div className="card flex-col">
             <p style={{fontSize:15,fontWeight:600}}>Add manually</p>
@@ -606,7 +688,7 @@ Respond ONLY as JSON, no markdown:
             </div>
           ):(
             <div style={{textAlign:"center",padding:"2rem",border:"1px dashed #dde1ec",borderRadius:12,color:"#9198b0",fontSize:14}}>
-              No contacts yet — import a CSV or add manually above.
+              No contacts yet — paste a list, import a CSV, or add manually above.
             </div>
           )}
 
