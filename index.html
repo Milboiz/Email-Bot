@@ -251,48 +251,130 @@ function EmailCard({item, index, status, onEdit, onRegenerate, disabled}) {
   );
 }
 
+// ── localStorage helpers ────────────────────────────────────────────────────
+
+function lsGet(key, fallback) {
+  try { const v=localStorage.getItem(key); return v!==null ? JSON.parse(v) : fallback; } catch { return fallback; }
+}
+function lsSet(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch {} }
+function lsClear() { ["eob_apiKey","eob_clientId","eob_campaign","eob_contacts","eob_sentHistory","eob_userEmail"].forEach(k=>localStorage.removeItem(k)); }
+
 // ── Main App ───────────────────────────────────────────────────────────────
 
 function App() {
   const [tab, setTab] = useState("setup");
   const [gisReady, setGisReady] = useState(false);
   const [gisError, setGisError] = useState(false);
-  const [clientId, setClientId] = useState("");
-  const [token, setToken] = useState(null);
-  const [userEmail, setUserEmail] = useState("");
+  const [reconnecting, setReconnecting] = useState(false);
+
+  // ── Persisted state (all backed by localStorage) ──
+  const [apiKey, setApiKey]     = useState(()=>lsGet("eob_apiKey",""));
+  const [clientId, setClientId] = useState(()=>lsGet("eob_clientId",""));
+  const [campaign, setCampaign] = useState(()=>lsGet("eob_campaign",{senderName:"",product:"",tone:"Professional",subjectHint:""}));
+  const [contacts, setContacts] = useState(()=>lsGet("eob_contacts",[]));
+  const [sentHistory, setSentHistory] = useState(()=>lsGet("eob_sentHistory",[])); // [{contact,subject,body,sentAt,status,replySnippet}]
+
+  useEffect(()=>lsSet("eob_apiKey",   apiKey),   [apiKey]);
+  useEffect(()=>lsSet("eob_clientId", clientId), [clientId]);
+  useEffect(()=>lsSet("eob_campaign", campaign), [campaign]);
+  useEffect(()=>lsSet("eob_contacts", contacts), [contacts]);
+  useEffect(()=>lsSet("eob_sentHistory", sentHistory), [sentHistory]);
+
+  // ── Session-only state ──
+  const [token, setToken]       = useState(null);
+  const [userEmail, setUserEmail] = useState(()=>lsGet("eob_userEmail",""));
   const [notifPermission, setNotifPermission] = useState(Notification?.permission||"default");
 
-  const [campaign, setCampaign] = useState({senderName:"",product:"",tone:"Professional",subjectHint:""});
-  const [contacts, setContacts] = useState([]);
-  const [newC, setNewC] = useState({name:"",email:"",company:"",jobTitle:"",linkedIn:"",notes:""});
-  const [csvDrag, setCsvDrag] = useState(false);
+  const [newC, setNewC]         = useState({name:"",email:"",company:"",jobTitle:"",linkedIn:"",notes:""});
+  const [csvDrag, setCsvDrag]   = useState(false);
   const [pasteText, setPasteText] = useState("");
-  const [parsing, setParsing] = useState(false);
-  const [parsedPreview, setParsedPreview] = useState(null); // array of contacts to confirm
+  const [parsing, setParsing]   = useState(false);
+  const [parsedPreview, setParsedPreview] = useState(null);
 
-  const [emails, setEmails] = useState([]);
+  const [emails, setEmails]     = useState([]);
   const [generating, setGenerating] = useState(false);
   const [sendStatus, setSendStatus] = useState({});
-  const [sending, setSending] = useState(false);
-  const [allSent, setAllSent] = useState(false);
+  const [sending, setSending]   = useState(false);
+  const [allSent, setAllSent]   = useState(false);
   const [threadIds, setThreadIds] = useState({});
   const [replyCount, setReplyCount] = useState(0);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
-  const pollRef = useRef(null);
+  const pollRef  = useRef(null);
   const tokenRef = useRef(token);
-  useEffect(()=>{tokenRef.current=token;},[token]);
+  useEffect(()=>{ tokenRef.current=token; },[token]);
 
-  // Load GIS
+  // ── Auth helper: shared callback after successful Gmail auth ──
+  const onAuthSuccess = async(accessToken, silent=false)=>{
+    setToken(accessToken);
+    const info=await fetch("https://www.googleapis.com/oauth2/v3/userinfo",{
+      headers:{Authorization:`Bearer ${accessToken}`}
+    }).then(r=>r.json()).catch(()=>({}));
+    const email=info.email||userEmail||"your Gmail account";
+    setUserEmail(email);
+    lsSet("eob_userEmail", email);
+    if(!campaign.senderName&&info.name) setCampaign(p=>({...p,senderName:info.name}));
+    if(Notification?.permission==="default") Notification.requestPermission().then(p=>setNotifPermission(p));
+    if(!silent) setTab("campaign");
+  };
+
+  // ── Load GIS & attempt silent reconnect ──
   useEffect(()=>{
-    if(window.google?.accounts?.oauth2){setGisReady(true);return;}
-    const s=document.createElement("script");
-    s.src="https://accounts.google.com/gsi/client";
-    s.onload=()=>setGisReady(true);
-    s.onerror=()=>setGisError(true);
-    document.head.appendChild(s);
+    const loadGIS=()=>{
+      if(window.google?.accounts?.oauth2){ setGisReady(true); return; }
+      const s=document.createElement("script");
+      s.src="https://accounts.google.com/gsi/client";
+      s.onload=()=>setGisReady(true);
+      s.onerror=()=>setGisError(true);
+      document.head.appendChild(s);
+    };
+    loadGIS();
   },[]);
 
-  // Reply polling
+  // Once GIS is ready, attempt silent token refresh if we have a saved clientId
+  useEffect(()=>{
+    if(!gisReady||!clientId.trim()) return;
+    setReconnecting(true);
+    try{
+      const client=window.google.accounts.oauth2.initTokenClient({
+        client_id:clientId.trim(),
+        scope:"https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/userinfo.email",
+        prompt:"",  // empty = silent; no popup if already authorised
+        callback:async(resp)=>{
+          setReconnecting(false);
+          if(resp.error||!resp.access_token) return; // silent fail → user must click manually
+          await onAuthSuccess(resp.access_token, true);
+          setTab("campaign"); // auto-advance if successful
+        },
+      });
+      client.requestAccessToken({prompt:""});
+    }catch{ setReconnecting(false); }
+  },[gisReady]); // only on first GIS load
+
+  const connectGmail = ()=>{
+    if(!gisReady||!clientId.trim()) return;
+    try{
+      const client=window.google.accounts.oauth2.initTokenClient({
+        client_id:clientId.trim(),
+        scope:"https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/userinfo.email",
+        callback:async(resp)=>{
+          if(resp.error){alert(`Auth error: ${resp.error}`);return;}
+          await onAuthSuccess(resp.access_token, false);
+        },
+      });
+      client.requestAccessToken();
+    }catch(e){alert(`Could not start auth: ${e.message}`);}
+  };
+
+  const clearAllData=()=>{
+    lsClear();
+    setApiKey(""); setClientId(""); setCampaign({senderName:"",product:"",tone:"Professional",subjectHint:""});
+    setContacts([]); setSentHistory([]); setUserEmail(""); setToken(null);
+    setEmails([]); setSendStatus({}); setAllSent(false); setThreadIds({});
+    setShowClearConfirm(false); setTab("setup");
+  };
+
+  // ── Reply polling ──
   const pollReplies = useCallback(async()=>{
     const t = tokenRef.current;
     if(!t || Object.keys(threadIds).length===0) return;
@@ -321,33 +403,21 @@ function App() {
     }
   },[allSent,threadIds,pollReplies]);
 
-  const connectGmail = ()=>{
-    if(!gisReady||!clientId.trim()) return;
-    try{
-      const client=window.google.accounts.oauth2.initTokenClient({
-        client_id:clientId.trim(),
-        scope:"https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/userinfo.email",
-        callback:async(resp)=>{
-          if(resp.error){alert(`Auth error: ${resp.error}`);return;}
-          setToken(resp.access_token);
-          const info=await fetch("https://www.googleapis.com/oauth2/v3/userinfo",{headers:{Authorization:`Bearer ${resp.access_token}`}}).then(r=>r.json()).catch(()=>({}));
-          setUserEmail(info.email||"your Gmail account");
-          setCampaign(p=>({...p,senderName:info.name||p.senderName}));
-          if(Notification?.permission==="default"){ Notification.requestPermission().then(p=>setNotifPermission(p)); }
-          setTab("campaign");
-        },
-      });
-      client.requestAccessToken();
-    }catch(e){alert(`Could not start auth: ${e.message}`);}
-  };
-
+  // ── Parse pasted text with Claude ──
   const parseContactsFromText = async()=>{
     if(!pasteText.trim()) return;
+    if(!apiKey.trim()){ alert("Add your Anthropic API key in the Setup tab first."); return; }
     setParsing(true);
     setParsedPreview(null);
     try{
       const res = await fetch("https://api.anthropic.com/v1/messages",{
-        method:"POST",headers:{"Content-Type":"application/json"},
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+          "x-api-key":apiKey.trim(),
+          "anthropic-version":"2023-06-01",
+          "anthropic-dangerous-direct-browser-access":"true",
+        },
         body:JSON.stringify({
           model:"claude-sonnet-4-6",max_tokens:2000,
           messages:[{role:"user",content:`Extract all contact information from the text below. Return a JSON array of contacts. Each contact should have these fields: name, email, company, jobTitle, linkedIn, notes. Only include contacts where you can identify at least a name and email address. If a field is not present, use an empty string.
@@ -359,6 +429,10 @@ Respond ONLY with a JSON array, no markdown, no explanation:
 [{"name":"...","email":"...","company":"...","jobTitle":"...","linkedIn":"...","notes":"..."}]`}]
         }),
       });
+      if(!res.ok){
+        const errData=await res.json().catch(()=>({}));
+        throw new Error(errData?.error?.message||`HTTP ${res.status}`);
+      }
       const data=await res.json();
       const text=(data.content||[]).map(b=>b.text||"").join("").replace(/```json|```/g,"").trim();
       const parsed=JSON.parse(text);
@@ -366,7 +440,7 @@ Respond ONLY with a JSON array, no markdown, no explanation:
       if(withIds.length===0){ alert("No contacts with both a name and email could be found. Try including email addresses in your text."); }
       else{ setParsedPreview(withIds); }
     }catch(e){
-      alert("Could not parse contacts — try formatting the text more clearly, or add them manually.");
+      alert(`Could not parse contacts: ${e.message}`);
     }
     setParsing(false);
   };
@@ -396,8 +470,15 @@ Respond ONLY with a JSON array, no markdown, no explanation:
   };
 
   const generateEmail = async (index, contact)=>{
+    if(!apiKey.trim()) throw new Error("No API key set");
     const res = await fetch("https://api.anthropic.com/v1/messages",{
-      method:"POST",headers:{"Content-Type":"application/json"},
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "x-api-key":apiKey.trim(),
+        "anthropic-version":"2023-06-01",
+        "anthropic-dangerous-direct-browser-access":"true",
+      },
       body:JSON.stringify({
         model:"claude-sonnet-4-6",max_tokens:1000,
         messages:[{role:"user",content:`You are an expert sales copywriter. Write a highly personalized cold outreach email.
@@ -421,12 +502,17 @@ Respond ONLY as JSON, no markdown:
 {"subject": "...", "body": "..."}`}]
       }),
     });
+    if(!res.ok){
+      const errData=await res.json().catch(()=>({}));
+      throw new Error(errData?.error?.message||`HTTP ${res.status}`);
+    }
     const data=await res.json();
     const text=(data.content||[]).map(b=>b.text||"").join("").replace(/```json|```/g,"").trim();
     return JSON.parse(text);
   };
 
   const generateAll = async()=>{
+    if(!apiKey.trim()){ alert("Add your Anthropic API key in the Setup tab first."); setTab("setup"); return; }
     setGenerating(true);setSendStatus({});setAllSent(false);setThreadIds({});setReplyCount(0);
     const placeholders=contacts.map(c=>({contact:c,loading:true,subject:"",body:""}));
     setEmails(placeholders);setTab("emails");
@@ -435,8 +521,8 @@ Respond ONLY as JSON, no markdown:
       try{
         const parsed=await generateEmail(i,contacts[i]);
         result[i]={contact:contacts[i],loading:false,subject:parsed.subject,body:parsed.body};
-      }catch{
-        result[i]={contact:contacts[i],loading:false,subject:"Draft",body:"Could not generate — edit manually.",error:true};
+      }catch(err){
+        result[i]={contact:contacts[i],loading:false,subject:"Draft",body:`Could not generate (${err.message}) — edit manually.`,error:true};
       }
       setEmails([...result]);
     }
@@ -502,6 +588,12 @@ Respond ONLY as JSON, no markdown:
             {notifPermission==="granted"&&<span title="Reply notifications active" style={{color:"#6366f1"}}>🔔</span>}
           </div>
         )}
+        {!token && reconnecting && (
+          <div className="user-chip">
+            <span className="spin" style={{fontSize:14}}>⟳</span>
+            <span className="muted small">Reconnecting…</span>
+          </div>
+        )}
       </div>
 
       {token && (
@@ -519,6 +611,29 @@ Respond ONLY as JSON, no markdown:
       {tab==="setup"&&(
         <div className="flex-col fade-in">
           {gisError&&<div className="card-danger">Could not load Google's auth library. Open this file via a local server — see the note below.</div>}
+
+          <div className="card flex-col">
+            <div className="flex-between">
+              <p style={{fontSize:15,fontWeight:600}}>Connect Claude</p>
+              {apiKey.trim()&&<span className="status-pill pill-sent">✓ Key saved</span>}
+            </div>
+            <div>
+              <label>Anthropic API key</label>
+              <input type="password" placeholder="sk-ant-…" value={apiKey} onChange={e=>setApiKey(e.target.value)} style={{fontFamily:"monospace",fontSize:12}}/>
+              <p className="small muted mt-4">Stored only in this browser tab's session — never sent anywhere except api.anthropic.com.</p>
+            </div>
+          </div>
+          <div className="card-accent">
+            <p style={{fontWeight:600,marginBottom:8}}>🔑 Get your API key (one-time, ~2 minutes)</p>
+            <ol className="setup">
+              <li>Go to <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> → sign in or sign up</li>
+              <li>Go to <strong>Settings → API Keys</strong></li>
+              <li>Click <strong>Create Key</strong>, name it, and copy it</li>
+              <li>Add a small credit balance under <strong>Billing</strong> (outreach emails cost a fraction of a cent each)</li>
+              <li>Paste the key above</li>
+            </ol>
+          </div>
+
           <div className="card flex-col">
             <p style={{fontSize:15,fontWeight:600}}>Connect your Gmail account</p>
             <div>
@@ -544,6 +659,24 @@ Respond ONLY as JSON, no markdown:
           </div>
           <div className="card-warning">
             📁 <strong>Running locally?</strong> Run <code style={{background:"rgba(0,0,0,.08)",padding:"1px 6px",borderRadius:4,fontFamily:"monospace",fontSize:12}}>python3 -m http.server 8080</code> in the file's folder, open <strong>http://localhost:8080/email-bot.html</strong>, and use <code className="inline">http://localhost:8080</code> as your authorized origin.
+          </div>
+
+          {/* Clear data */}
+          <div className="card flex-col" style={{borderColor:"#fca5a5"}}>
+            <div className="flex-between">
+              <div>
+                <p style={{fontSize:14,fontWeight:500,color:"#dc2626"}}>Clear all saved data</p>
+                <p className="small muted">Removes your API key, Client ID, campaign settings, and contacts from this browser.</p>
+              </div>
+              {!showClearConfirm
+                ? <button className="btn-danger" onClick={()=>setShowClearConfirm(true)}>Clear data</button>
+                : <div className="flex-row gap-8">
+                    <span className="small" style={{color:"#dc2626",fontWeight:500}}>Are you sure?</span>
+                    <button className="btn-danger" onClick={clearAllData}>Yes, clear</button>
+                    <button className="btn-secondary" onClick={()=>setShowClearConfirm(false)}>Cancel</button>
+                  </div>
+              }
+            </div>
           </div>
         </div>
       )}
@@ -587,6 +720,12 @@ Respond ONLY as JSON, no markdown:
       {/* ── CONTACTS ──────────────────────────────────────────────────── */}
       {tab==="contacts"&&(
         <div className="flex-col fade-in">
+          {!apiKey.trim()&&(
+            <div className="card-warning flex-between">
+              <span>🔑 Add your Anthropic API key to use AI-powered paste parsing and email generation.</span>
+              <button className="btn-ghost" onClick={()=>setTab("setup")}>Go to Setup</button>
+            </div>
+          )}
           {/* CSV import */}
           <div className="card flex-col">
             <p style={{fontSize:15,fontWeight:600}}>Import contacts</p>
