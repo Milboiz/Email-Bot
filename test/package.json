@@ -1,0 +1,15 @@
+{
+  "name": "ops-assistant-tests",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Optional dev-only checks for ../index.html. The app itself has no build step and no dependencies.",
+  "scripts": {
+    "test": "node verify.js && node render.js"
+  },
+  "devDependencies": {
+    "@babel/standalone": "^7.26.0",
+    "jsdom": "^25.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
+}
