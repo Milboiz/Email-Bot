@@ -1,11 +1,39 @@
 # Ops Assistant
 
-An AI-powered back-office assistant for solo freelancers and agencies running cold outreach.
-Single static page, no backend, no build step — deployed to GitHub Pages at
-**https://milboiz.github.io/Email-Bot/**
+**Cold email tools help you send. This one helps you follow up.**
 
-Bring your own Gmail OAuth consent and Anthropic API key; everything is stored in your own
-browser's `localStorage` and nothing is sent to any server other than Google and Anthropic.
+If you send a few thousand emails a month, use a real outreach platform. This is for the
+freelancer sending forty researched emails a month who still keeps losing leads — not
+because the emails were bad, but because nobody remembered that Jane went quiet three weeks
+ago, and that Marcus's reply was a pricing question rather than a no.
+
+It flags who's gone silent, drafts the nudge, and tells you what every reply actually says.
+
+**→ [milboiz.github.io/Email-Bot](https://milboiz.github.io/Email-Bot/)**
+
+### The short version
+
+- **One HTML file.** No backend, no accounts, no build step, no install. React via CDN.
+- **Your list never leaves your browser.** Everything is in `localStorage`. The only servers
+  involved are Google (to send and read your own mail) and Anthropic (to write the drafts).
+- **No subscription.** You bring an Anthropic API key and pay for tokens — roughly **$0.008**
+  per drafted email, **$0.004** per triaged reply. Call it 50¢ a month at forty emails.
+- **Follow-ups send as real thread replies**, using `threadId` + `In-Reply-To`/`References` —
+  not a fresh "just circling back" email they've never seen.
+- **A "no" stops the sequence automatically.** Tag a reply Unsubscribe, Not Interested, Wrong
+  Person, or Referral and that contact can never be nudged again.
+
+### Reasons not to use it
+
+Named up front, because finding out later is worse:
+
+- **No deliverability tooling.** No warmup, no inbox or domain rotation, no spam testing. It
+  sends from your Gmail account, which caps around 500/day on a consumer plan.
+- **One browser, no sync.** Switch laptops and your history doesn't follow. Clear site data
+  and it's gone.
+- **Setup takes ~10 minutes.** You create your own Google Cloud OAuth client, and you'll click
+  past an "unverified app" warning on your own account until you verify it.
+- **Single operator.** No shared inbox, no team assignment, no CRM sync.
 
 ## What it does
 
@@ -91,4 +119,11 @@ cd test && npm install && npm test
 
 Claude is called directly from the browser via the `anthropic-dangerous-direct-browser-access`
 header. The model is set by the `MODEL` constant near the top of the script block in
-`index.html` — currently `claude-sonnet-4-6`.
+`index.html` — currently `claude-sonnet-4-6`. Change that one line to switch models.
+
+## Using it?
+
+There's no analytics and no backend, so I genuinely can't tell whether anyone gets through
+setup. If you got it running, [open an issue](https://github.com/Milboiz/Email-Bot/issues)
+saying what you're using it for — or what stopped you. The OAuth step is the part I most
+expect people to bounce off, and I'd like to know.
